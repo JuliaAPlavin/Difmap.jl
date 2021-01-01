@@ -43,6 +43,29 @@ end
     @test Difmap.inout_pairs(res)[2] == ("print(1 + 2)" => ["3"])
 end
 
+@testset "copy file" begin
+    res = mktemp() do tempf, _
+        write(tempf, "\nprint \"2 * 2\"\n")
+        script = [
+            "print(1 + 2)",
+            "@my_script_file",
+            "exit",
+        ]
+        Difmap.execute(script, source_files=[tempf => "my_script_file"])
+    end
+    @test res.success
+    @test isempty(res.outfiles)
+    @test res.stderr == "Exiting program\n"
+    @test Difmap.outputlines(res) |> length == 5
+    @test occursin("Started logfile", Difmap.outputlines(res)[1])
+    @test Difmap.outputlines(res)[2] == "3"
+    @test "2 * 2" == Difmap.outputlines(res)[3]
+    @test Difmap.inout_pairs(res) |> length == 6
+    @test Difmap.inout_pairs(res)[2] == ("print(1 + 2)" => ["3"])
+    @test Difmap.inout_pairs(res)[3] == ("![@my_script_file]" => [])
+    @test Difmap.inout_pairs(res)[4] == ("print \"2 * 2\"" => ["2 * 2"])
+end
+
 @testset "process vis data" begin
     script = [
         "observe $(joinpath(artifact"test_data", "J0000+0248_C_2016_01_03_pet_vis.fits"))",

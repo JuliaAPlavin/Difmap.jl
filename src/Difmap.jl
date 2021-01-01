@@ -16,22 +16,26 @@ end
 
 execute(script::Vector{String}; kwargs...) = execute(join(script, "\n"); kwargs...)
 
-function execute(script::String; move_files_to=nothing)
+function execute(script::String; source_files=[], move_files_to=nothing)
     mktempdir() do tmp_dir
         @info "Running difmap in $tmp_dir"
         cd(tmp_dir) do
             @assert !isfile("difmap.log")
+            for (from, to) in source_files
+                cp(from, to)
+            end
+            @assert !isfile("commands")
             open("commands", "w") do f
                 write(f, script)
             end
             difmap() do exe
                 out = Pipe()
-                err = Pipe()              
+                err = Pipe()
                 process = run(pipeline(`$exe` |> ignorestatus, stdin="commands", stdout=out, stderr=err), wait=true)
                 close(out.in)
                 close(err.in)
               
-                files = map(filter(f -> f ∉ ["commands", "difmap.log"], readdir())) do f
+                files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(source_files), readdir())) do f
                     (name=f, size=stat(f).size)
                 end
                 if move_files_to !== nothing
