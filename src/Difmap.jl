@@ -16,14 +16,19 @@ end
 
 execute(script::Vector{String}; kwargs...) = execute(join(script, "\n"); kwargs...)
 
-function execute(script::String; source_files=[], move_files_to=nothing)
+function execute(script::String; source_files=[], target_files=[], target_files_overwrite=false)
+    original_dir = pwd()
     mktempdir() do tmp_dir
-        @info "Running difmap in $tmp_dir"
+        @debug "Running difmap in $tmp_dir"
         cd(tmp_dir) do
-            @assert !isfile("difmap.log")
-            for (from, to) in source_files
-                cp(from, to)
+            if !isempty(source_files)
+                @debug "Copying files $source_files from $original_dir to $tmp_dir"
+                for (from, to) in source_files
+                    @assert !occursin("/", to) to
+                    cp(joinpath(original_dir, from), to)
+                end
             end
+            @assert !isfile("difmap.log")
             @assert !isfile("commands")
             open("commands", "w") do f
                 write(f, script)
@@ -38,11 +43,14 @@ function execute(script::String; source_files=[], move_files_to=nothing)
                 files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(source_files), readdir())) do f
                     (name=f, size=stat(f).size)
                 end
-                if move_files_to !== nothing
-                    @info "Moving files $files to $move_files_to"
-                    for f in files
-                        @assert isfile(f.name)
-                        mv(f.name, joinpath(move_files_to, f.name))
+                @assert setdiff(sort([f.name for f in files]), sort(first.(target_files))) |> isempty   files
+                if !isempty(target_files)
+                    @debug "Copying files $target_files from $tmp_dir to $original_dir"
+                    for (from, to) in target_files
+                        @assert isfile(from)
+                        if to != nothing
+                            cp(from, joinpath(original_dir, to), force=target_files_overwrite)
+                        end
                     end
                 end
                 return ExecutionResult(

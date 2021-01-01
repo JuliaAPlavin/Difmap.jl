@@ -78,7 +78,8 @@ end
         "save result",
         "exit",
     ]
-    res = Difmap.execute(script)
+    @test_throws AssertionError Difmap.execute(script)
+    res = Difmap.execute(script, target_files=["result.fits", "result.mod", "result.par", "result.uvf", "tmp.ps"] .=> nothing)
     @test res.success
     @test res.outfiles == [
         (name = "result.fits", size = 279360),
