@@ -57,7 +57,7 @@ end
         "save result",
         "exit",
     ]
-    @test_throws AssertionError Difmap.execute(script)
+    @test !Difmap.execute(script).success
     res = Difmap.execute(script, out_files=["result.fits", "result.mod", "result.par", "result.uvf", "tmp.ps"] .=> nothing)
     @test res.success
     @test res.outfiles[1:end-1] == [
