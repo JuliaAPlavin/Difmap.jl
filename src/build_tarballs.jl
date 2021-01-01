@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "difmap"
-version = v"2.5.500"
+version = v"2.5.5"
 
 sources = [
     ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5e.tar.gz", "457cd77c146e22b5332403c19b29485388a863ec494fff87137176396fc6a9ff"),
@@ -29,6 +29,8 @@ cp ../pgplot_build/libpgplot.so $libdir
 platforms = [
     Linux(:x86_64, libc=:musl),
     Linux(:x86_64, libc=:glibc),
+    Linux(:i686, libc=:musl),
+    Linux(:i686, libc=:glibc),
 ]
 platforms = expand_gfortran_versions(platforms)
 
