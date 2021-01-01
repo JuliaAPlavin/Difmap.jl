@@ -62,11 +62,14 @@ function execute(script::String; in_files=[], out_files=[], out_files_overwrite=
     end
 end
 
-inputlines(res::ExecutionResult) = filter(s -> !isempty(s) && !startswith(s, "! "), split(res.log, "\n"))
-outputlines(res::ExecutionResult) = map(s -> strip(s[2:end]), filter(s -> startswith(s, "! "), split(res.log, "\n")))
+inputlines(res::ExecutionResult) = inputlines(res.log)
+inputlines(log::String) = filter(s -> !isempty(s) && !startswith(s, "! "), split(log, "\n"))
+outputlines(res::ExecutionResult) = outputlines(res.log)
+outputlines(log::String) = map(s -> strip(s[2:end]), filter(s -> startswith(s, "! "), split(log, "\n")))
 
-function inout_pairs(res::ExecutionResult)
-    lines = map(s -> (line=s, kind=startswith(s, "! ") ? :out : :in), split(res.log, "\n"))
+inout_pairs(res::ExecutionResult) = inout_pairs(res.log)
+function inout_pairs(log::String)
+    lines = map(s -> (line=s, kind=startswith(s, "! ") ? :out : :in), split(log, "\n"))
     result = ["" => String[]]
     for s in lines
         if s.kind == :in && !isempty(s.line)
