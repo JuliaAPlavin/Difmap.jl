@@ -45,7 +45,7 @@ function execute(script::String; in_files=[], out_files=[], out_files_overwrite=
             end
             @assert setdiff(sort([f.name for f in files]), sort(first.(out_files))) |> isempty   files
             if !isempty(out_files)
-                @debug "Copying files $out_files from $tmp_dir to $original_dir"
+                @debug "Copying files from $tmp_dir to $original_dir" out_files readdir(tmp_dir)
                 for (from, to) in out_files
                     @assert isfile(joinpath(tmp_dir, from)) from
                     if to != nothing
