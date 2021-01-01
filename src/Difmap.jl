@@ -16,14 +16,14 @@ end
 
 execute(script::Vector{String}; kwargs...) = execute(join(script, "\n"); kwargs...)
 
-function execute(script::String; source_files=[], target_files=[], target_files_overwrite=false)
+function execute(script::String; in_files=[], out_files=[], out_files_overwrite=false)
     original_dir = pwd()
     mktempdir() do tmp_dir
         @debug "Running difmap in $tmp_dir"
         cd(tmp_dir) do
-            if !isempty(source_files)
-                @debug "Copying files $source_files from $original_dir to $tmp_dir"
-                for (from, to) in source_files
+            if !isempty(in_files)
+                @debug "Copying files $in_files from $original_dir to $tmp_dir"
+                for (from, to) in in_files
                     @assert !occursin("/", to) to
                     cp(joinpath(original_dir, from), to)
                 end
@@ -40,16 +40,16 @@ function execute(script::String; source_files=[], target_files=[], target_files_
                 close(out.in)
                 close(err.in)
               
-                files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(source_files), readdir())) do f
+                files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(in_files), readdir())) do f
                     (name=f, size=stat(f).size)
                 end
-                @assert setdiff(sort([f.name for f in files]), sort(first.(target_files))) |> isempty   files
-                if !isempty(target_files)
-                    @debug "Copying files $target_files from $tmp_dir to $original_dir"
-                    for (from, to) in target_files
+                @assert setdiff(sort([f.name for f in files]), sort(first.(out_files))) |> isempty   files
+                if !isempty(out_files)
+                    @debug "Copying files $out_files from $tmp_dir to $original_dir"
+                    for (from, to) in out_files
                         @assert isfile(from)
                         if to != nothing
-                            cp(from, joinpath(original_dir, to), force=target_files_overwrite)
+                            cp(from, joinpath(original_dir, to), force=out_files_overwrite)
                         end
                     end
                 end

@@ -51,7 +51,7 @@ end
             "@my_script_file",
             "exit",
         ]
-        Difmap.execute(script, source_files=[tempf => "my_script_file"])
+        Difmap.execute(script, in_files=[tempf => "my_script_file"])
     end
     @test res.success
     @test isempty(res.outfiles)
@@ -79,7 +79,7 @@ end
         "exit",
     ]
     @test_throws AssertionError Difmap.execute(script)
-    res = Difmap.execute(script, target_files=["result.fits", "result.mod", "result.par", "result.uvf", "tmp.ps"] .=> nothing)
+    res = Difmap.execute(script, out_files=["result.fits", "result.mod", "result.par", "result.uvf", "tmp.ps"] .=> nothing)
     @test res.success
     @test res.outfiles == [
         (name = "result.fits", size = 279360),
