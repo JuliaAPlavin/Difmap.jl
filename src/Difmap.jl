@@ -33,14 +33,12 @@ function execute(script::String; in_files=[], out_files=[], out_files_overwrite=
             write(f, script)
         end
         difmap() do exe
-            out = Pipe()
-            err = Pipe()
+            out = joinpath(tmp_dir, "__stdout")
+            err = joinpath(tmp_dir, "__stderr")
             cmd = Cmd(`$exe`, ignorestatus=true, dir=tmp_dir)
             process = run(pipeline(cmd, stdin=joinpath(tmp_dir, "commands"), stdout=out, stderr=err), wait=true)
-            close(out.in)
-            close(err.in)
 
-            files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(in_files), readdir(tmp_dir))) do f
+            files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(in_files) && !startswith(f, "__"), readdir(tmp_dir))) do f
                 (name=f, size=stat(joinpath(tmp_dir, f)).size)
             end
             @assert setdiff(sort([f.name for f in files]), sort(first.(out_files))) |> isempty   files
