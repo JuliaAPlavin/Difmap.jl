@@ -10,7 +10,7 @@ using difmap_jll
     success::Bool = exitcode == 0
     stdout::String
     stderr::String
-    log::String
+    log::Union{String, Nothing}
     outfiles::Vector
 end
 
@@ -57,7 +57,7 @@ function execute(script::String; in_files=[], out_files=[], out_files_overwrite=
                 exitcode=process.exitcode,
                 stdout=read(out, String),
                 stderr=read(err, String),
-                log=read(joinpath(tmp_dir, "difmap.log"), String),
+                log=isfile(joinpath(tmp_dir, "difmap.log")) ? read(joinpath(tmp_dir, "difmap.log"), String) : nothing,
                 outfiles=files,
             )
         end
