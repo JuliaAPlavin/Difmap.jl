@@ -33,42 +33,41 @@ function execute(script::String; in_files=[], out_files=[], out_files_overwrite=
         open(joinpath(tmp_dir, "commands"), "w") do f
             write(f, script)
         end
-        difmap() do exe
-            out = joinpath(tmp_dir, "__stdout")
-            err = joinpath(tmp_dir, "__stderr")
-            cmd = Cmd(`$exe`, ignorestatus=true, dir=tmp_dir)
-            process = run(pipeline(cmd, stdin=joinpath(tmp_dir, "commands"), stdout=out, stderr=err), wait=true)
-            success = process.exitcode == 0
+        
+        out = joinpath(tmp_dir, "__stdout")
+        err = joinpath(tmp_dir, "__stderr")
+        cmd = Cmd(`$(difmap())`, ignorestatus=true, dir=tmp_dir)
+        process = run(pipeline(cmd, stdin=joinpath(tmp_dir, "commands"), stdout=out, stderr=err), wait=true)
+        success = process.exitcode == 0
 
-            files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(in_files) && !startswith(f, "__"), readdir(tmp_dir))) do f
-                (name=f, size=stat(joinpath(tmp_dir, f)).size)
-            end
-            if !isempty(setdiff(sort([f.name for f in files]), sort(first.(out_files))))
-                success = false
-                @warn "Unexpected output files present" setdiff(sort([f.name for f in files]), sort(first.(out_files)))
-            end
-            if !isempty(out_files)
-                @debug "Copying files from $tmp_dir to $original_dir" out_files readdir(tmp_dir)
-                for (from, to) in out_files
-                    if !isfile(joinpath(tmp_dir, from))
-                        success = false
-                        @warn "Expected output file not present" from
-                        continue
-                    end
-                    if to != nothing
-                        cp(joinpath(tmp_dir, from), joinpath(original_dir, to), force=out_files_overwrite)
-                    end
+        files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(in_files) && !startswith(f, "__"), readdir(tmp_dir))) do f
+            (name=f, size=stat(joinpath(tmp_dir, f)).size)
+        end
+        if !isempty(setdiff(sort([f.name for f in files]), sort(first.(out_files))))
+            success = false
+            @warn "Unexpected output files present" setdiff(sort([f.name for f in files]), sort(first.(out_files)))
+        end
+        if !isempty(out_files)
+            @debug "Copying files from $tmp_dir to $original_dir" out_files readdir(tmp_dir)
+            for (from, to) in out_files
+                if !isfile(joinpath(tmp_dir, from))
+                    success = false
+                    @warn "Expected output file not present" from
+                    continue
+                end
+                if to != nothing
+                    cp(joinpath(tmp_dir, from), joinpath(original_dir, to), force=out_files_overwrite)
                 end
             end
-            return ExecutionResult(
-                exitcode=process.exitcode,
-                success=success,
-                stdout=read(out, String),
-                stderr=read(err, String),
-                log=isfile(joinpath(tmp_dir, "difmap.log")) ? read(joinpath(tmp_dir, "difmap.log"), String) : nothing,
-                outfiles=files,
-            )
         end
+        return ExecutionResult(
+            exitcode=process.exitcode,
+            success=success,
+            stdout=read(out, String),
+            stderr=read(err, String),
+            log=isfile(joinpath(tmp_dir, "difmap.log")) ? read(joinpath(tmp_dir, "difmap.log"), String) : nothing,
+            outfiles=files,
+        )
     end
 end
 
