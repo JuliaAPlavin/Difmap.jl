@@ -56,7 +56,8 @@ end
         "save result",
         "exit",
     ]
-    @test !Difmap.execute(script).success
+    @test_logs (:warn,) res = Difmap.execute(script)
+    @test !res.success
     res = Difmap.execute(script, out_files=["result.fits", "result.mod", "result.par", "result.uvf", "tmp.ps"] .=> nothing)
     @test res.success
     @test res.outfiles[1:end-1] == [
