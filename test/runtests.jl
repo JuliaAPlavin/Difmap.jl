@@ -60,10 +60,9 @@ end
     @test !res.success
     res = Difmap.execute(script, out_files=["result.fits", "result.mod", "result.par", "result.uvf", "tmp.ps"] .=> nothing)
     @test res.success
-    @test res.outfiles[1:end-1] == [
+    @test res.outfiles[[1, 2, 4]] == [
         (name = "result.fits", size = 279360),
         (name = "result.mod", size = 7026),
-        (name = "result.par", size = 635),
         (name = "result.uvf", size = 43200),
     ]
     @test res.outfiles[end].name == "tmp.ps"
