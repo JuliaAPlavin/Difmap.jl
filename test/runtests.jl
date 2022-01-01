@@ -75,5 +75,9 @@ end
     @test occursin(" = 512x512 pixels ", iops[4].second[end])
 end
 
+
+using Documenter
+doctest(Difmap; manual=false)
+
 import CompatHelperLocal as CHL
 CHL.@check()
