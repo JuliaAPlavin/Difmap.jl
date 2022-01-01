@@ -1,11 +1,9 @@
 module Difmap
 
-using IterTools: groupby, partition
-using Parameters: @with_kw
 using difmap_jll
 
 
-@with_kw struct ExecutionResult
+Base.@kwdef struct ExecutionResult
     exitcode::Int
     success::Bool
     stdout::String

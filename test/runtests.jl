@@ -1,5 +1,4 @@
 using Test
-using Pkg.Artifacts
 using Difmap
 
 
@@ -75,3 +74,6 @@ end
     @test occursin(" 1152 visibilities", iops[2].second[end])
     @test occursin(" = 512x512 pixels ", iops[4].second[end])
 end
+
+import CompatHelperLocal as CHL
+CHL.@check()
