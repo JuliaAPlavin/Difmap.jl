@@ -8,7 +8,7 @@ using Difmap
         "exit",
     ]
     res = Difmap.execute(script)
-    @test res.success
+    @test success(res)
     @test isempty(res.outfiles)
     @test res.stderr == "Exiting program\n"
     @test Difmap.inputlines(res) == script
@@ -31,7 +31,7 @@ end
         ]
         Difmap.execute(script, in_files=[tempf => "my_script_file"])
     end
-    @test res.success
+    @test success(res)
     @test isempty(res.outfiles)
     @test res.stderr == "Exiting program\n"
     @test Difmap.outputlines(res) |> length == 5

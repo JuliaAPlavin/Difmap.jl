@@ -3,6 +3,7 @@
     replace(read(path, String), "```julia" => "```jldoctest mylabel")
 end module Difmap
 
+using DataPipes
 using difmap_jll
 
 
@@ -14,6 +15,8 @@ Base.@kwdef struct ExecutionResult
     log::Union{String, Nothing}
     outfiles::Vector
 end
+
+Base.success(r::ExecutionResult) = r.success
 
 execute(script::Vector{String}; kwargs...) = execute(join(script, "\n"); kwargs...)
 
@@ -72,13 +75,13 @@ function execute(script::String; in_files=[], out_files=[], out_files_overwrite=
 end
 
 inputlines(res::ExecutionResult) = inputlines(res.log)
-inputlines(log::String) = filter(s -> !isempty(s) && !startswith(s, "! "), split(log, "\n"))
+inputlines(log::String) = @p split(log, "\n") |> filter(!isempty(_) && !startswith(_, "! "))
 outputlines(res::ExecutionResult) = outputlines(res.log)
-outputlines(log::String) = map(s -> strip(s[2:end]), filter(s -> startswith(s, "! "), split(log, "\n")))
+outputlines(log::String) = @p split(log, "\n") |> filter(startswith(_, "! ")) |> map(strip(_[2:end]))
 
 inout_pairs(res::ExecutionResult) = inout_pairs(res.log)
 function inout_pairs(log::String)
-    lines = map(s -> (line=s, kind=startswith(s, "! ") ? :out : :in), split(log, "\n"))
+    lines = @p split(log, "\n") |> map((line=_, kind=startswith(_, "! ") ? :out : :in))
     result = ["" => String[]]
     for s in lines
         if s.kind == :in && !isempty(s.line)
