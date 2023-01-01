@@ -105,6 +105,7 @@ function plots(res::ExecutionResult, args=`-density 100`)
         identify() do exe
             r = run(`$exe $p`; wait=false)
             wait(r)
+            @show r read(r, String)
             success(r)
         end || return nothing
         imagemagick_convert() do exe
