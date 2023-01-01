@@ -6,6 +6,8 @@ Relies on the `difmap_jll.jl` package to provide the `difmap` binary.
 
 # Usage
 
+See also the [Pluto notebook](https://aplavin.github.io/Difmap.jl/test/examples.html) that includes plots.
+
 ```julia
 julia> using Difmap
 
