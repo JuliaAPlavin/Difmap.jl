@@ -3,7 +3,8 @@
     replace(read(path, String), "```julia" => "```jldoctest mylabel")
 end module Difmap
 
-using DataPipes
+using DataPipes: @p
+using FlexiMaps: filtermap
 using difmap_jll
 using ImageMagick_jll: imagemagick_convert, identify
 
