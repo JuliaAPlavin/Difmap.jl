@@ -56,14 +56,14 @@ end
         "save result",
         "exit",
     ]
-    @test_logs (:warn,) res = Difmap.execute(script)
-    @test !res.success
-    res = Difmap.execute(script, out_files=["result.fits", "result.mod", "result.par", "result.uvf", "tmp.ps"] .=> nothing)
-    @test res.success
-    @test res.outfiles[[1, 2, 4]] == [
-        (name = "result.fits", size = 279360),
-        (name = "result.mod", size = 7026),
-        (name = "result.uvf", size = 43200),
+    res = Difmap.execute(script)
+    @test success(res)
+    res = Difmap.execute(script, out_files=[["result.fits", "result.mod", "result.par", "result.uvf"] .=> nothing; "tmp.ps" => tempname()])
+    @test success(res)
+    @test map(f -> f[(:name,)], res.outfiles[[1, 2, 4]]) == [
+        (name = "result.fits",),
+        (name = "result.mod",),
+        (name = "result.uvf",),
     ]
     @test res.outfiles[end].name == "tmp.ps"
     @test res.stderr == "Polarization I is unavailable.\nExiting program\n"
@@ -73,6 +73,8 @@ end
     @test occursin(r" J0000\+0248$", iops[2].second[4])
     @test occursin(" 1152 visibilities", iops[2].second[end])
     @test occursin(" = 512x512 pixels ", iops[4].second[end])
+
+    @test length(Difmap.plots(res)) == 1
 end
 
 

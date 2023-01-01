@@ -5,6 +5,7 @@ end module Difmap
 
 using DataPipes
 using difmap_jll
+using ImageMagick_jll: imagemagick_convert, identify
 
 
 Base.@kwdef struct ExecutionResult
@@ -43,23 +44,18 @@ function execute(script::String; in_files=[], out_files=[], out_files_overwrite=
         process = run(pipeline(cmd, stdin=joinpath(tmp_dir, "commands"), stdout=out, stderr=err), wait=true)
         success = process.exitcode == 0
 
-        files = map(filter(f -> f ∉ ["commands", "difmap.log"] && f ∉ last.(in_files) && !startswith(f, "__"), readdir(tmp_dir))) do f
-            (name=f, size=stat(joinpath(tmp_dir, f)).size)
-        end
-        if !isempty(setdiff(sort([f.name for f in files]), sort(first.(out_files))))
-            success = false
-            @warn "Unexpected output files present" setdiff(sort([f.name for f in files]), sort(first.(out_files)))
-        end
-        if !isempty(out_files)
-            @debug "Copying files from $tmp_dir to $original_dir" out_files readdir(tmp_dir)
-            for (from, to) in out_files
-                if !isfile(joinpath(tmp_dir, from))
-                    success = false
-                    @warn "Expected output file not present" from
-                    continue
-                end
-                if to != nothing
-                    cp(joinpath(tmp_dir, from), joinpath(original_dir, to), force=out_files_overwrite)
+        files = @p begin
+            readdir(tmp_dir)
+            filter(_ ∉ ["commands", "difmap.log"] && _ ∉ last.(in_files) && !startswith(_, "__"))
+            map() do f
+                if f ∈ first.(out_files)
+                    tgt = @p out_files |> filter(_[1] == f) |> only() |> __[2]
+                    isnothing(tgt) && return (name=f, path=nothing)
+                    tgt = joinpath(original_dir, tgt)
+                    cp(joinpath(tmp_dir, f), tgt, force=out_files_overwrite)
+                    (name=f, path=tgt)
+                else
+                    (name=f, path=nothing)
                 end
             end
         end
@@ -91,6 +87,29 @@ function inout_pairs(log::String)
         end
     end
     return result
+end
+
+struct Plot
+    file::String
+end
+
+function Base.show(io::IO, ::MIME"image/png", p::Plot)
+    open(p.file) do f
+        write(io, f)
+    end
+end
+
+function plots(res::ExecutionResult, args=`-density 100`)
+    @p res.outfiles |> filtermap(_.path) |> filtermap() do p
+        outfile = tempname()
+        identify() do exe
+            success(run(`$exe $p`; wait=false))
+        end || return nothing
+        imagemagick_convert() do exe
+            run(`$exe $args $(p) PNG:$(outfile)`)
+        end
+        Plot(outfile)
+    end
 end
 
 end
