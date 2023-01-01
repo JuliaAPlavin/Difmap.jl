@@ -104,8 +104,7 @@ function plots(res::ExecutionResult, args=`-density 100`)
         outfile = tempname()
         identify() do exe
             r = run(`$exe $p`; wait=false)
-            wait(r)
-            @show r read(r, String)
+            @show read(ignorestatus(`$exe $p`), String)
             success(r)
         end || return nothing
         imagemagick_convert() do exe
