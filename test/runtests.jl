@@ -74,9 +74,7 @@ end
     @test occursin(" 1152 visibilities", iops[2].second[end])
     @test occursin(" = 512x512 pixels ", iops[4].second[end])
 
-    Difmap.plots(res)
-    # XXX: fails on CI
-    # @test length(Difmap.plots(res)) == 1
+    @test length(Difmap.plots(res)) == 1
 end
 
 
