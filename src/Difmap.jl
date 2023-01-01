@@ -103,9 +103,7 @@ function plots(res::ExecutionResult, args=`-density 100`)
     @p res.outfiles |> filtermap(_.path) |> filtermap() do p
         outfile = tempname()
         success(run(`$(identify()) $p`; wait=false)) || return nothing
-        imagemagick_convert() do exe
-            run(`$exe $args $(p) PNG:$(outfile)`)
-        end
+        run(`$(imagemagick_convert()) $args $(p) PNG:$(outfile)`)
         Plot(outfile)
     end
 end
