@@ -1,7 +1,7 @@
 name = "Difmap"
 uuid = "697f6f98-b792-4bca-85fe-71b3d053de65"
 authors = ["Alexander Plavin <alexander@plav.in>"]
-version = "0.1.16"
+version = "0.1.17"
 
 [deps]
 DataPipes = "02685ad9-2d12-40c3-9f73-c6aeda6a7ff5"
@@ -12,6 +12,6 @@ difmap_jll = "43cd2700-e54a-5645-adf8-b9b288a87fe6"
 [compat]
 DataPipes = "0.2.5, 0.3"
 FlexiMaps = "0.1.0"
-ImageMagick_jll = "6.9"
+ImageMagick_jll = "6.9, 7.1"
 difmap_jll = "2.5.11"
 julia = "1.6"
