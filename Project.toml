@@ -13,7 +13,7 @@ difmap_jll = "43cd2700-e54a-5645-adf8-b9b288a87fe6"
 [compat]
 DataPipes = "0.2.5, 0.3"
 FlexiMaps = "0.1.0"
-Ghostscript_jll = "9.53"
+Ghostscript_jll = "9.53 - 9.53"
 ImageMagick_jll = "7"
 difmap_jll = "2.5.17"
 julia = "1.6"
